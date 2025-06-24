@@ -1,0 +1,19 @@
+{
+	"geode": "4.6.1",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "v99.quick_next_free_group_id",
+	"name": "Quick Next Free Group ID",
+	"version": "v1.0.0",
+	"developer": "V99",
+	"description": "Adds a Next Free GID button to the editor.",
+	"resources": {
+		"sprites": [
+			"resources/next-free-gid.png"
+		]
+	}
+}
