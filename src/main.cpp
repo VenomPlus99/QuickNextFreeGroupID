@@ -115,6 +115,8 @@ public:
 class $modify(MyEditorUI, EditorUI) {
   struct Fields {
     CCMenuItemSpriteExtra *m_newGidButton = nullptr;
+    bool autoDeselect = Mod::get()->getSettingValue<bool>("auto-deselect");
+    bool disableGroupXY = Mod::get()->getSettingValue<bool>("disable-grp-x-y");
   };
 
   bool init(LevelEditorLayer *levelEditorLayer) {
@@ -145,6 +147,16 @@ class $modify(MyEditorUI, EditorUI) {
     }
   }
 
+  void assignSingleGroup() { // Assigns next free group to all selected objects
+    int newGroupID = m_editorLayer->getNextFreeGroupID(m_selectedObjects);
+    for (int i = 0; i < m_selectedObjects->count(); ++i) {
+      auto obj = static_cast<GameObject *>(m_selectedObjects->objectAtIndex(i));
+      if (obj) {
+        obj->addToGroup(newGroupID);
+      }
+    }
+  }
+
   void onNewGid(CCObject *sender) { // On button press, this function checks
                                     // whether one or more obj is selected
     if (m_fields->m_newGidButton) {
@@ -153,52 +165,38 @@ class $modify(MyEditorUI, EditorUI) {
 
       if (selectionCount > 0) { // If multiple objects are selected
         log::info("Multiple objects selected");
-        object = m_selectedObject;
 
-        auto popup = multiGIDPopup::create(
-            [this]() {
-              int newGroupID =
-                  m_editorLayer->getNextFreeGroupID(m_selectedObjects);
-              for (int i = 0; i < m_selectedObjects->count(); ++i) {
-                auto obj = static_cast<GameObject *>(
-                    m_selectedObjects->objectAtIndex(i));
-                if (obj) {
-                  obj->addToGroup(newGroupID);
-                }
-              }
-            },                                          // New Group X callback
-            [this]() { this->assignNewGroups(false); }, // New Group X callback
-            [this]() { this->assignNewGroups(true); }   // New Group Y callback
-        );
-        popup->show();
+        auto handlePostAction = [this](auto &&fn) {
+          fn();
+          if (m_fields->autoDeselect) {
+            deselectAll();
+          } else {
+            updateObjectInfoLabel();
+          }
+        };
 
+        if (m_fields->disableGroupXY) {
+          handlePostAction([this]() { assignSingleGroup(); });
+        } else {
+          auto popup = multiGIDPopup::create(
+              [=]() { handlePostAction([this]() { assignSingleGroup(); }); },
+              [=]() { handlePostAction([this]() { assignNewGroups(false); }); },
+              [=]() { handlePostAction([this]() { assignNewGroups(true); }); });
+          popup->show();
+        }
       } else if (m_selectedObject) { // If one object is selected
         log::info("Only one object selected");
-        object = m_selectedObject;
-        assignNewGroups(object);
+        assignNewGroups(true);
+        if (m_fields->autoDeselect) {
+          deselectAll();
+        } else {
+          updateObjectInfoLabel();
+        }
       } else {
         log::info("No objects selected"); // No objects selected
       }
     }
   }
-
-  // void addToGroup() {
-  //   if (!m_selectedObjects || m_selectedObjects->count() == 0) {
-  //     log::info("No objects selected.");
-  //     return;
-  //   }
-
-  //   int newGroupID = m_editorLayer->getNextFreeGroupID(m_selectedObjects);
-
-  //   for (int i = 0; i < m_selectedObjects->count(); ++i) {
-  //     auto obj = static_cast<GameObject
-  //     *>(m_selectedObjects->objectAtIndex(i)); if (obj) {
-  //       obj->addToGroup(newGroupID);
-  //     }
-  //   }
-
-  //   log::info("Assigned group ID {} to all selected objects.", newGroupID);
-  // }
 
   void updateButtons() { // Enables/Disables the button if objects are
                          // selected/not selected respectively

@@ -18,5 +18,19 @@
 	},
 	"tags": [
 		"editor", "offline", "utility"
-	]
+	],
+	"settings": {
+        "auto-deselect": {
+            "type": "bool",
+            "name": "Auto Deselect",
+			"description": "Deselects objects automatically after assigning next free group ID(s)",
+			"default": false
+        },
+        "disable-grp-x-y": {
+            "type": "bool",
+            "name": "Disable New Group X/Y",
+			"description": "Pressing the button will immediately assign the next free Group ID to all selected objects, bypassing the popup with multiple options. (Only applies when multiple objects are selected.)",
+			"default": false
+        }
+	}
 }
