@@ -8,12 +8,15 @@
 	},
 	"id": "v99.quick_next_free_group_id",
 	"name": "Quick Next Free Group ID",
-	"version": "v1.0.1",
+	"version": "v1.0.2",
 	"developer": "V99",
 	"description": "Adds a Next Free GID button to the editor.",
 	"resources": {
 		"sprites": [
 			"resources/next-free-gid.png"
 		]
-	}
+	},
+	"tags": [
+		"editor", "offline", "utility"
+	]
 }
