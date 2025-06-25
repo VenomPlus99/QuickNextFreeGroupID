@@ -8,6 +8,7 @@ protected:
   static constexpr float popupWidth = 220.f;
   static constexpr float popupHeight = 130.f;
 
+  std::function<void()> m_onNewGroupCallback;
   std::function<void()> m_onNewGroupXCallback;
   std::function<void()> m_onNewGroupYCallback;
 
@@ -15,21 +16,27 @@ protected:
     this->setTitle("Next Free GID");
 
     // New Group X and Y buttons
-    auto btnX = ButtonSprite::create("New Group X", "bigFont.fnt",
+    auto btnNew = ButtonSprite::create("New Group", "bigFont.fnt",
+                                       "GJ_button_01.png", 1.f);
+    auto btnX = ButtonSprite::create("New Groups X", "bigFont.fnt",
                                      "GJ_button_01.png", 1.f);
-    auto btnY = ButtonSprite::create("New Group Y", "bigFont.fnt",
+    auto btnY = ButtonSprite::create("New Groups Y", "bigFont.fnt",
                                      "GJ_button_01.png", 1.f);
-    btnX->setScale(0.6f);
-    btnY->setScale(0.6f);
 
+    btnNew->setScale(0.5f);
+    btnX->setScale(0.5f);
+    btnY->setScale(0.5f);
+
+    auto newItem = CCMenuItemSpriteExtra::create(
+        btnNew, this, menu_selector(multiGIDPopup::onNewGroup));
     auto xItem = CCMenuItemSpriteExtra::create(
         btnX, this, menu_selector(multiGIDPopup::onNewGroupX));
     auto yItem = CCMenuItemSpriteExtra::create(
         btnY, this, menu_selector(multiGIDPopup::onNewGroupY));
 
-    auto buttonsMenu = CCMenu::create(xItem, yItem, nullptr);
+    auto buttonsMenu = CCMenu::create(newItem, xItem, yItem, nullptr);
     buttonsMenu->alignItemsVerticallyWithPadding(
-        15.f); // vertical spacing between buttons
+        7.f); // vertical spacing between buttons
     buttonsMenu->setPosition(
         {popupWidth / 2.f, 55.f}); // adjust Y to position menu vertically
     m_mainLayer->addChild(buttonsMenu);
@@ -37,16 +44,24 @@ protected:
     // Help Button
     auto helpSprite =
         CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
-    helpSprite->setScale(0.5f);
+    helpSprite->setScale(0.7f);
     auto helpButton = CCMenuItemSpriteExtra::create(
         helpSprite, this, menu_selector(multiGIDPopup::onInfoClicked));
 
     auto helpMenu = CCMenu::create(helpButton, nullptr);
     helpMenu->setAnchorPoint({1.f, 1.f});
-    helpMenu->setPosition({popupWidth - 10.f, popupHeight - 10.f});
+    helpMenu->setPosition({popupWidth - 12.f, popupHeight - 12.f});
     m_mainLayer->addChild(helpMenu);
 
     return true;
+  }
+
+  void onNewGroup(CCObject *sender) {
+    log::info("New Group selected");
+    if (m_onNewGroupCallback) {
+      m_onNewGroupCallback(); // Call set new group individually
+    }
+    this->onClose(sender);
   }
 
   void onNewGroupX(CCObject *sender) {
@@ -69,18 +84,24 @@ protected:
     // Show explanation popup when "i" clicked
     FLAlertLayer::create(
         "Help", // title
-        "<cc>New Group X</c> assigns new groups from left to right.\n"
-        "<cc>New Group Y</c> assigns new groups from bottom to top.", // content
-        "OK"                                                          // button
+        "<cy>New Group</c> assigns <cg>one</c> new group ID to all selected "
+        "objects.\n"
+        "<cy>New Groups X</c> assigns new group IDs to selected objects from "
+        "<cg>left to right</c>.\n"
+        "<cy>New Groups Y</c> assigns new group IDs to selected objects from "
+        "<cg>bottom to top</c>.", // content
+        "OK"                      // button
         )
         ->show();
   }
 
 public:
-  static multiGIDPopup *create(std::function<void()> onNewGroupX,
+  static multiGIDPopup *create(std::function<void()> onNewGroup,
+                               std::function<void()> onNewGroupX,
                                std::function<void()> onNewGroupY) {
     auto ret = new multiGIDPopup(); // Pointer to popup
     if (ret && ret->initAnchored(popupWidth, popupHeight)) {
+      ret->m_onNewGroupCallback = std::move(onNewGroup);
       ret->m_onNewGroupXCallback = std::move(onNewGroupX);
       ret->m_onNewGroupYCallback = std::move(onNewGroupY);
       ret->autorelease();
@@ -135,6 +156,17 @@ class $modify(MyEditorUI, EditorUI) {
         object = m_selectedObject;
 
         auto popup = multiGIDPopup::create(
+            [this]() {
+              int newGroupID =
+                  m_editorLayer->getNextFreeGroupID(m_selectedObjects);
+              for (int i = 0; i < m_selectedObjects->count(); ++i) {
+                auto obj = static_cast<GameObject *>(
+                    m_selectedObjects->objectAtIndex(i));
+                if (obj) {
+                  obj->addToGroup(newGroupID);
+                }
+              }
+            },                                          // New Group X callback
             [this]() { this->assignNewGroups(false); }, // New Group X callback
             [this]() { this->assignNewGroups(true); }   // New Group Y callback
         );
@@ -149,6 +181,24 @@ class $modify(MyEditorUI, EditorUI) {
       }
     }
   }
+
+  // void addToGroup() {
+  //   if (!m_selectedObjects || m_selectedObjects->count() == 0) {
+  //     log::info("No objects selected.");
+  //     return;
+  //   }
+
+  //   int newGroupID = m_editorLayer->getNextFreeGroupID(m_selectedObjects);
+
+  //   for (int i = 0; i < m_selectedObjects->count(); ++i) {
+  //     auto obj = static_cast<GameObject
+  //     *>(m_selectedObjects->objectAtIndex(i)); if (obj) {
+  //       obj->addToGroup(newGroupID);
+  //     }
+  //   }
+
+  //   log::info("Assigned group ID {} to all selected objects.", newGroupID);
+  // }
 
   void updateButtons() { // Enables/Disables the button if objects are
                          // selected/not selected respectively
