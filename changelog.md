@@ -1,3 +1,7 @@
+# 1.0.6
+
+- Added support for iOS and MacOS.
+
 # 1.0.5
 
 - Added support for iOS and MacOS (this time for real).
