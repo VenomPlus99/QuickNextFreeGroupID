@@ -3,7 +3,8 @@
 
 using namespace geode::prelude;
 
-class multiGIDPopup : public geode::Popup<> {
+class multiGIDPopup : public geode::Popup<>
+{
 protected:
   static constexpr float popupWidth = 220.f;
   static constexpr float popupHeight = 130.f;
@@ -12,7 +13,8 @@ protected:
   std::function<void()> m_onNewGroupXCallback;
   std::function<void()> m_onNewGroupYCallback;
 
-  bool setup() override {
+  bool setup() override
+  {
     this->setTitle("Next Free GID");
 
     // New Group X and Y buttons
@@ -29,14 +31,17 @@ protected:
 
     auto newItem = CCMenuItemSpriteExtra::create(
         btnNew, this, menu_selector(multiGIDPopup::onNewGroup));
+
     auto xItem = CCMenuItemSpriteExtra::create(
         btnX, this, menu_selector(multiGIDPopup::onNewGroupX));
+
     auto yItem = CCMenuItemSpriteExtra::create(
         btnY, this, menu_selector(multiGIDPopup::onNewGroupY));
 
     auto buttonsMenu = CCMenu::create(newItem, xItem, yItem, nullptr);
-    buttonsMenu->alignItemsVerticallyWithPadding(
-        7.f); // vertical spacing between buttons
+    newItem->setPositionY(newItem->getPositionY() + 24.f);
+    yItem->setPositionY(yItem->getPositionY() - 24.f);
+    // buttonsMenu->alignItemsVerticallyWithPadding(7.f);
     buttonsMenu->setPosition(
         {popupWidth / 2.f, 55.f}); // adjust Y to position menu vertically
     m_mainLayer->addChild(buttonsMenu);
@@ -56,31 +61,38 @@ protected:
     return true;
   }
 
-  void onNewGroup(CCObject *sender) {
+  void onNewGroup(CCObject *sender)
+  {
     log::info("New Group selected");
-    if (m_onNewGroupCallback) {
+    if (m_onNewGroupCallback)
+    {
       m_onNewGroupCallback(); // Call set new group individually
     }
     this->onClose(sender);
   }
 
-  void onNewGroupX(CCObject *sender) {
+  void onNewGroupX(CCObject *sender)
+  {
     log::info("New Group X selected");
-    if (m_onNewGroupXCallback) {
+    if (m_onNewGroupXCallback)
+    {
       m_onNewGroupXCallback(); // Call assignNewGroups(false) => New Group X
     }
     this->onClose(sender);
   }
 
-  void onNewGroupY(CCObject *sender) {
+  void onNewGroupY(CCObject *sender)
+  {
     log::info("New Group Y selected");
-    if (m_onNewGroupYCallback) {
+    if (m_onNewGroupYCallback)
+    {
       m_onNewGroupYCallback(); // Call assignNewGroups(true) => New Group Y
     }
     this->onClose(sender);
   }
 
-  void onInfoClicked(CCObject *) {
+  void onInfoClicked(CCObject *)
+  {
     // Show explanation popup when "i" clicked
     FLAlertLayer::create(
         "Help", // title
@@ -98,9 +110,11 @@ protected:
 public:
   static multiGIDPopup *create(std::function<void()> onNewGroup,
                                std::function<void()> onNewGroupX,
-                               std::function<void()> onNewGroupY) {
+                               std::function<void()> onNewGroupY)
+  {
     auto ret = new multiGIDPopup(); // Pointer to popup
-    if (ret && ret->initAnchored(popupWidth, popupHeight)) {
+    if (ret && ret->initAnchored(popupWidth, popupHeight))
+    {
       ret->m_onNewGroupCallback = std::move(onNewGroup);
       ret->m_onNewGroupXCallback = std::move(onNewGroupX);
       ret->m_onNewGroupYCallback = std::move(onNewGroupY);
@@ -112,18 +126,22 @@ public:
   }
 };
 
-class $modify(MyEditorUI, EditorUI) {
-  struct Fields {
+class $modify(MyEditorUI, EditorUI)
+{
+  struct Fields
+  {
     CCMenuItemSpriteExtra *m_newGidButton = nullptr;
     bool autoDeselect = Mod::get()->getSettingValue<bool>("auto-deselect");
     bool disableGroupXY = Mod::get()->getSettingValue<bool>("disable-grp-x-y");
   };
 
-  bool init(LevelEditorLayer *levelEditorLayer) {
+  bool init(LevelEditorLayer *levelEditorLayer)
+  {
     if (!EditorUI::init(levelEditorLayer))
       return false;
 
-    if (auto menu = getChildByID("editor-buttons-menu")) {
+    if (auto menu = getChildByID("editor-buttons-menu"))
+    {
       CCSprite *sprite = CCSprite::create("next-free-gid.png"_spr);
 
       m_fields->m_newGidButton = CCMenuItemSpriteExtra::create(
@@ -139,82 +157,118 @@ class $modify(MyEditorUI, EditorUI) {
     return true;
   }
 
-  void showUI(bool isActive) {
+  void showUI(bool isActive)
+  {
     EditorUI::showUI(isActive);
 
-    if (m_fields->m_newGidButton) {
+    if (m_fields->m_newGidButton)
+    {
       m_fields->m_newGidButton->setVisible(isActive);
     }
   }
 
-  void assignSingleGroup() { // Assigns next free group to all selected objects
+  void assignSingleGroup()
+  { // Assigns next free group to all selected objects
     int newGroupID = m_editorLayer->getNextFreeGroupID(m_selectedObjects);
-    for (int i = 0; i < m_selectedObjects->count(); ++i) {
+    for (int i = 0; i < m_selectedObjects->count(); ++i)
+    {
       auto obj = static_cast<GameObject *>(m_selectedObjects->objectAtIndex(i));
-      if (obj) {
+      if (obj)
+      {
         obj->addToGroup(newGroupID);
       }
     }
   }
 
-  void onNewGid(CCObject *sender) { // On button press, this function checks
-                                    // whether one or more obj is selected
-    if (m_fields->m_newGidButton) {
+  void onNewGid(CCObject *sender)
+  { // On button press, this function checks
+    // whether one or more obj is selected
+    if (m_fields->m_newGidButton)
+    {
       GameObject *object = nullptr;
       int selectionCount = m_selectedObjects ? m_selectedObjects->count() : 0;
 
-      if (selectionCount > 0) { // If multiple objects are selected
+      if (selectionCount > 0)
+      { // If multiple objects are selected
         log::info("Multiple objects selected");
 
-        auto handlePostAction = [this](auto &&fn) {
+        auto handlePostAction = [this](auto &&fn)
+        {
           fn();
-          if (m_fields->autoDeselect) {
+          if (m_fields->autoDeselect)
+          {
             deselectAll();
-          } else {
+          }
+          else
+          {
             updateObjectInfoLabel();
           }
         };
 
-        if (m_fields->disableGroupXY) {
-          handlePostAction([this]() { assignSingleGroup(); });
-        } else {
+        if (m_fields->disableGroupXY)
+        {
+          handlePostAction([this]()
+                           { assignSingleGroup(); });
+        }
+        else
+        {
           auto popup = multiGIDPopup::create(
-              [=]() { handlePostAction([this]() { assignSingleGroup(); }); },
-              [=]() { handlePostAction([this]() { assignNewGroups(false); }); },
-              [=]() { handlePostAction([this]() { assignNewGroups(true); }); });
+              [=]()
+              { handlePostAction([this]()
+                                 { assignSingleGroup(); }); },
+              [=]()
+              { handlePostAction([this]()
+                                 { assignNewGroups(false); }); },
+              [=]()
+              { handlePostAction([this]()
+                                 { assignNewGroups(true); }); });
           popup->show();
         }
-      } else if (m_selectedObject) { // If one object is selected
+      }
+      else if (m_selectedObject)
+      { // If one object is selected
         log::info("Only one object selected");
         assignNewGroups(true);
-        if (m_fields->autoDeselect) {
+        if (m_fields->autoDeselect)
+        {
           deselectAll();
-        } else {
+        }
+        else
+        {
           updateObjectInfoLabel();
         }
-      } else {
+      }
+      else
+      {
         log::info("No objects selected"); // No objects selected
       }
     }
   }
 
-  void updateButtons() { // Enables/Disables the button if objects are
-                         // selected/not selected respectively
+  void updateButtons()
+  { // Enables/Disables the button if objects are
+    // selected/not selected respectively
     EditorUI::updateButtons();
 
-    if (m_fields->m_newGidButton) {
-      if (m_selectedObject || m_selectedObjects->count() > 0) {
+    if (m_fields->m_newGidButton)
+    {
+      if (m_selectedObject || m_selectedObjects->count() > 0)
+      {
         enableButton(m_fields->m_newGidButton, true, false);
-      } else {
+      }
+      else
+      {
         enableButton(m_fields->m_newGidButton, false, false);
       }
     }
   }
 
   // Credits to HJfod for enableButton & enableToggle:
-  void enableButton(CCMenuItemSpriteExtra *btn, bool enabled, bool visualOnly) {
+  void enableButton(CCMenuItemSpriteExtra *btn, bool enabled, bool visualOnly)
+  {
     btn->setEnabled(enabled || visualOnly);
-    if (auto spr = typeinfo_cast<CCRGBAProtocol *>(btn->getNormalImage())) {
+    if (auto spr = typeinfo_cast<CCRGBAProtocol *>(btn->getNormalImage()))
+    {
       spr->setCascadeColorEnabled(true);
       spr->setCascadeOpacityEnabled(true);
       spr->setColor(enabled ? ccWHITE : ccGRAY);
@@ -222,7 +276,8 @@ class $modify(MyEditorUI, EditorUI) {
     }
   }
 
-  void enableToggle(CCMenuItemToggler *toggle, bool enabled, bool visualOnly) {
+  void enableToggle(CCMenuItemToggler *toggle, bool enabled, bool visualOnly)
+  {
     toggle->setEnabled(enabled || visualOnly);
     enableButton(toggle->m_onButton, enabled, visualOnly);
     enableButton(toggle->m_offButton, enabled, visualOnly);

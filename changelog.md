@@ -1,13 +1,17 @@
+# 1.0.4
+
+- Added support for iOS and MacOS.
+
 # 1.0.3
 
 Added two settings options:
 
 - Auto Deselect: Deselects objects automatically after assigning next free group ID(s).
-- Disable New Group X/Y: Pressing the button will immediately assign the next free Group ID to all selected objects, bypassing the popup with multiple options. (Only applies when multiple objects are selected.)
+- Disable New Group X/Y: Pressing the button will immediately assign the next free Group ID to all selected objects, bypassing the popup with multiple options. (Only applies when multiple objects are selected).
 
 # 1.0.2
 
-- Added tags
+- Added tags.
 
 # 1.0.1
 
