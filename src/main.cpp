@@ -38,12 +38,16 @@ protected:
     auto yItem = CCMenuItemSpriteExtra::create(
         btnY, this, menu_selector(multiGIDPopup::onNewGroupY));
 
-    auto buttonsMenu = CCMenu::create(newItem, xItem, yItem, nullptr);
-    newItem->setPositionY(newItem->getPositionY() + 24.f);
-    yItem->setPositionY(yItem->getPositionY() - 24.f);
-    // buttonsMenu->alignItemsVerticallyWithPadding(7.f);
-    buttonsMenu->setPosition(
-        {popupWidth / 2.f, 55.f}); // adjust Y to position menu vertically
+    // Buttons menu
+    auto buttonsMenu = CCMenu::create();
+    buttonsMenu->addChild(newItem);
+    buttonsMenu->addChild(xItem);
+    buttonsMenu->addChild(yItem);
+
+    newItem->setPositionY(24.f);
+    yItem->setPositionY(-24.f);
+
+    buttonsMenu->setPosition({popupWidth / 2.f, 55.f});
     m_mainLayer->addChild(buttonsMenu);
 
     // Help Button
@@ -53,7 +57,8 @@ protected:
     auto helpButton = CCMenuItemSpriteExtra::create(
         helpSprite, this, menu_selector(multiGIDPopup::onInfoClicked));
 
-    auto helpMenu = CCMenu::create(helpButton, nullptr);
+    auto helpMenu = CCMenu::create();
+    helpMenu->addChild(helpButton);
     helpMenu->setAnchorPoint({1.f, 1.f});
     helpMenu->setPosition({popupWidth - 12.f, popupHeight - 12.f});
     m_mainLayer->addChild(helpMenu);
@@ -63,7 +68,6 @@ protected:
 
   void onNewGroup(CCObject *sender)
   {
-    log::info("New Group selected");
     if (m_onNewGroupCallback)
     {
       m_onNewGroupCallback(); // Call set new group individually
@@ -73,7 +77,6 @@ protected:
 
   void onNewGroupX(CCObject *sender)
   {
-    log::info("New Group X selected");
     if (m_onNewGroupXCallback)
     {
       m_onNewGroupXCallback(); // Call assignNewGroups(false) => New Group X
@@ -83,7 +86,6 @@ protected:
 
   void onNewGroupY(CCObject *sender)
   {
-    log::info("New Group Y selected");
     if (m_onNewGroupYCallback)
     {
       m_onNewGroupYCallback(); // Call assignNewGroups(true) => New Group Y
@@ -95,15 +97,14 @@ protected:
   {
     // Show explanation popup when "i" clicked
     FLAlertLayer::create(
-        "Help", // title
+        "Help",
         "<cy>New Group</c> assigns <cg>one</c> new group ID to all selected "
         "objects.\n"
         "<cy>New Groups X</c> assigns new group IDs to selected objects from "
         "<cg>left to right</c>.\n"
         "<cy>New Groups Y</c> assigns new group IDs to selected objects from "
-        "<cg>bottom to top</c>.", // content
-        "OK"                      // button
-        )
+        "<cg>bottom to top</c>.",
+        "OK")
         ->show();
   }
 
@@ -190,8 +191,6 @@ class $modify(MyEditorUI, EditorUI)
 
       if (selectionCount > 0)
       { // If multiple objects are selected
-        log::info("Multiple objects selected");
-
         auto handlePostAction = [this](auto &&fn)
         {
           fn();
@@ -227,7 +226,6 @@ class $modify(MyEditorUI, EditorUI)
       }
       else if (m_selectedObject)
       { // If one object is selected
-        log::info("Only one object selected");
         assignNewGroups(true);
         if (m_fields->autoDeselect)
         {
@@ -237,10 +235,6 @@ class $modify(MyEditorUI, EditorUI)
         {
           updateObjectInfoLabel();
         }
-      }
-      else
-      {
-        log::info("No objects selected"); // No objects selected
       }
     }
   }
