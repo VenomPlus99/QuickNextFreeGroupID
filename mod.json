@@ -8,7 +8,7 @@
 	},
 	"id": "v99.quick_next_free_group_id",
 	"name": "Quick Next Free Group ID",
-	"version": "v1.0.6",
+	"version": "v1.0.7",
 	"developer": "V99",
 	"description": "Adds a Next Free GID button to the editor.",
 	"resources": {
@@ -17,20 +17,28 @@
 		]
 	},
 	"tags": [
-		"editor", "offline", "utility"
+		"editor",
+		"offline",
+		"utility"
 	],
 	"settings": {
-        "auto-deselect": {
-            "type": "bool",
-            "name": "Auto Deselect",
+		"auto-deselect": {
+			"type": "bool",
+			"name": "Auto Deselect",
 			"description": "Deselects objects automatically after assigning next free group ID(s)",
 			"default": false
-        },
-        "disable-grp-x-y": {
-            "type": "bool",
-            "name": "Disable New Group X/Y",
+		},
+		"disable-grp-x-y": {
+			"type": "bool",
+			"name": "Disable New Group X/Y",
 			"description": "Pressing the button will immediately assign the next free Group ID to all selected objects, bypassing the popup with multiple options. (Only applies when multiple objects are selected.)",
 			"default": false
-        }
+		}
+	},
+	"dependencies": {
+		"geode.node-ids": {
+			"version": "1.21.1",
+			"importance": "required"
+		}
 	}
 }
